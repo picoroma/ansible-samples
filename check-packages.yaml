@@ -1,7 +1,7 @@
 ---
-- name: Verifica presenza pacchetti senza installazione
+- name: Verifica presenza pacchetti senza installazione (Debian, RedHat, SUSE)
   hosts: all
-  gather_facts: yes   # necessario per ansible_os_family
+  gather_facts: yes
   become: no
 
   vars:
@@ -13,7 +13,7 @@
   tasks:
     - name: Controlla se i pacchetti sono installati (Debian/Ubuntu)
       ansible.builtin.shell: "dpkg -s {{ item }} | grep 'Status: install ok installed'"
-      register: pkg_check
+      register: pkg_check_deb
       ignore_errors: yes
       loop: "{{ packages_to_check }}"
       when: ansible_os_family == "Debian"
@@ -21,8 +21,8 @@
     - name: Stampa risultato controllo pacchetti Debian
       ansible.builtin.debug:
         msg: "Pacchetto {{ item.item }} è installato."
-      loop: "{{ pkg_check.results }}"
-      when: item.rc == 0
+      loop: "{{ pkg_check_deb.results }}"
+      when: pkg_check_deb is defined and pkg_check_deb.results is defined and item.rc == 0
 
     - name: Controlla se i pacchetti sono installati (RedHat/CentOS)
       ansible.builtin.shell: "rpm -q {{ item }}"
@@ -35,4 +35,17 @@
       ansible.builtin.debug:
         msg: "Pacchetto {{ item.item }} è installato."
       loop: "{{ pkg_check_rpm.results }}"
-      when: item.rc == 0
+      when: pkg_check_rpm is defined and pkg_check_rpm.results is defined and item.rc == 0
+
+    - name: Controlla se i pacchetti sono installati (SUSE)
+      ansible.builtin.shell: "zypper --non-interactive info {{ item }} | grep 'Installed: Yes'"
+      register: pkg_check_suse
+      ignore_errors: yes
+      loop: "{{ packages_to_check }}"
+      when: ansible_distribution in ["SUSE", "openSUSE"]
+
+    - name: Stampa risultato controllo pacchetti SUSE
+      ansible.builtin.debug:
+        msg: "Pacchetto {{ item.item }} è installato."
+      loop: "{{ pkg_check_suse.results }}"
+      when: pkg_check_suse is defined and pkg_check_suse.results is defined and item.rc == 0
