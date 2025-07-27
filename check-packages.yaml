@@ -26,7 +26,7 @@
         - pkg_check_deb is defined
         - pkg_check_deb.results is defined
         - item is mapping
-        - 'rc' in item
+        - "'rc' in item"
         - item.rc == 0
 
     - name: Controlla se i pacchetti sono installati (RedHat/CentOS)
@@ -44,7 +44,7 @@
         - pkg_check_rpm is defined
         - pkg_check_rpm.results is defined
         - item is mapping
-        - 'rc' in item
+        - "'rc' in item"
         - item.rc == 0
 
     - name: Controlla se i pacchetti sono installati (SUSE)
@@ -62,5 +62,5 @@
         - pkg_check_suse is defined
         - pkg_check_suse.results is defined
         - item is mapping
-        - 'rc' in item
+        - "'rc' in item"
         - item.rc == 0
