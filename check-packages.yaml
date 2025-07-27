@@ -52,7 +52,7 @@
       register: pkg_check_suse
       ignore_errors: yes
       loop: "{{ packages_to_check }}"
-      when: ansible_distribution in ["SUSE", "openSUSE"]
+      when: ansible_distribution in ["SUSE", "openSUSE", "SLES", "openSUSE Leap"]
 
     - name: Stampa risultato controllo pacchetti SUSE
       ansible.builtin.debug:
