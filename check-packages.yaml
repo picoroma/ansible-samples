@@ -1,0 +1,38 @@
+---
+- name: Verifica presenza pacchetti senza installazione
+  hosts: all
+  gather_facts: no
+  become: no
+
+  vars:
+    packages_to_check:
+      - curl
+      - git
+      - vim
+
+  tasks:
+    - name: Controlla se i pacchetti sono installati (Debian/Ubuntu)
+      ansible.builtin.shell: dpkg -s {{ item }} | grep "Status: install ok installed"
+      register: pkg_check
+      ignore_errors: yes
+      loop: "{{ packages_to_check }}"
+      when: ansible_os_family == "Debian"
+
+    - name: Stampa risultato controllo pacchetti Debian
+      ansible.builtin.debug:
+        msg: "Pacchetto {{ item.item }} è installato."
+      loop: "{{ pkg_check.results }}"
+      when: item.rc == 0
+
+    - name: Controlla se i pacchetti sono installati (RedHat/CentOS)
+      ansible.builtin.shell: rpm -q {{ item }}
+      register: pkg_check_rpm
+      ignore_errors: yes
+      loop: "{{ packages_to_check }}"
+      when: ansible_os_family == "RedHat"
+
+    - name: Stampa risultato controllo pacchetti RedHat
+      ansible.builtin.debug:
+        msg: "Pacchetto {{ item.item }} è installato."
+      loop: "{{ pkg_check_rpm.results }}"
+      when: item.rc == 0
