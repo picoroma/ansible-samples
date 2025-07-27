@@ -8,21 +8,14 @@
       - vim
 
   tasks:
-    - name: "Check if listed package is installed on Debian family"
+    - name: "Check if listed package is installed on Debian family (Debian/Ubuntu)"
       command: dpkg-query -l "{{ item }}"
       loop: "{{ package_names }}"
       register: package_check_deb
       ignore_errors: yes
       when: ansible_facts['os_family'] == "Debian"
 
-    - name: "Check if listed package is installed on RedHat family"
-      command: rpm -q "{{ item }}"
-      loop: "{{ package_names }}"
-      register: package_check_rpm
-      ignore_errors: yes
-      when: ansible_facts['os_family'] == "RedHat"
-      
-    - name: "Print installed packages (Debian)"
+    - name: "Print installed packages (Debian/Ubuntu)"
       debug:
         msg: "Package {{ item.item }} is installed."
       loop: "{{ package_check_deb.results }}"
@@ -34,7 +27,14 @@
         - item.rc == 0
         - ansible_facts['os_family'] == "Debian"
 
-    - name: "Print installed packages (RedHat)"
+    - name: "Check if listed package is installed on RedHat family (RedHat/CentOS)"
+      command: rpm -q "{{ item }}"
+      loop: "{{ package_names }}"
+      register: package_check_rpm
+      ignore_errors: yes
+      when: ansible_facts['os_family'] == "RedHat"
+
+    - name: "Print installed packages (RedHat/CentOS)"
       debug:
         msg: "Package {{ item.item }} is installed."
       loop: "{{ package_check_rpm.results }}"
@@ -45,3 +45,22 @@
         - "'rc' in item"
         - item.rc == 0
         - ansible_facts['os_family'] == "RedHat"
+
+    - name: "Check if listed package is installed on SUSE family (Suse)"
+      command: zypper --non-interactive info "{{ item }}" | grep 'Installed: Yes'
+      loop: "{{ package_names }}"
+      register: package_check_suse
+      ignore_errors: yes
+      when: ansible_facts['os_family'] == "Suse"
+
+    - name: "Print installed packages (SUSE)"
+      debug:
+        msg: "Package {{ item.item }} is installed."
+      loop: "{{ package_check_suse.results }}"
+      when:
+        - package_check_suse is defined
+        - package_check_suse.results is defined
+        - item is mapping
+        - "'rc' in item"
+        - item.rc == 0
+        - ansible_facts['os_family'] == "Suse"
