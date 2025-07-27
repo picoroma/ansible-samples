@@ -46,15 +46,14 @@
         - item.rc == 0
         - ansible_facts['os_family'] == "RedHat"
 
-    - name: "Check if listed package is installed on SUSE family (Suse)"
-      ansible.builtin.shell: |
-        zypper --non-interactive info "{{ item }}" | grep 'Installed: Yes'
-      loop: "{{ package_names }}"
-      register: package_check_suse
-      ignore_errors: yes
-      when: ansible_facts['os_family'] == "Suse"
+    - name: Check if listed package is installed on SUSE family (Suse)
+        command: rpm -q "{{ item }}"
+        loop: "{{ package_names }}"
+        register: package_check_suse
+        ignore_errors: yes
+        when: ansible_facts['os_family'] == "Suse"
 
-    - name: "Print installed packages (SUSE)"
+    - name: Print installed packages (SUSE)
       debug:
         msg: "Package {{ item.item }} is installed."
       loop: "{{ package_check_suse.results }}"
