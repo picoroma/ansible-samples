@@ -49,10 +49,10 @@
     - name: "Check if listed package is installed on SUSE family (Suse)"
       ansible.builtin.shell: |
         zypper --non-interactive info "{{ item }}" | grep 'Installed: Yes'
-        loop: "{{ package_names }}"
-        register: package_check_suse
-        ignore_errors: yes
-        when: ansible_facts['os_family'] == "Suse"
+      loop: "{{ package_names }}"
+      register: package_check_suse
+      ignore_errors: yes
+      when: ansible_facts['os_family'] == "Suse"
 
     - name: "Print installed packages (SUSE)"
       debug:
