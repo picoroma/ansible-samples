@@ -1,66 +1,47 @@
 ---
-- name: Verifica presenza pacchetti senza installazione (Debian, RedHat, SUSE)
-  hosts: all
+- hosts: servers
   gather_facts: yes
-  become: no
-
   vars:
-    packages_to_check:
+    package_names:
       - curl
       - git
       - vim
 
   tasks:
-    - name: Controlla se i pacchetti sono installati (Debian/Ubuntu)
-      ansible.builtin.shell: "dpkg -s {{ item }} | grep 'Status: install ok installed'"
-      register: pkg_check_deb
+    - name: "Check if listed package is installed on Debian family"
+      command: dpkg-query -l "{{ item }}"
+      loop: "{{ package_names }}"
+      register: package_check_deb
       ignore_errors: yes
-      loop: "{{ packages_to_check }}"
       when: ansible_facts['os_family'] == "Debian"
 
-    - name: Stampa risultato controllo pacchetti Debian
-      ansible.builtin.debug:
-        msg: "Pacchetto {{ item.item }} è installato."
-      loop: "{{ pkg_check_deb.results }}"
-      when:
-        - pkg_check_deb is defined
-        - pkg_check_deb.results is defined
-        - item is mapping
-        - "'rc' in item"
-        - item.rc == 0
-
-    - name: Controlla se i pacchetti sono installati (RedHat/CentOS)
-      ansible.builtin.shell: "rpm -q {{ item }}"
-      register: pkg_check_rpm
+    - name: "Check if listed package is installed on RedHat family"
+      command: rpm -q "{{ item }}"
+      loop: "{{ package_names }}"
+      register: package_check_rpm
       ignore_errors: yes
-      loop: "{{ packages_to_check }}"
       when: ansible_facts['os_family'] == "RedHat"
-
-    - name: Stampa risultato controllo pacchetti RedHat
-      ansible.builtin.debug:
-        msg: "Pacchetto {{ item.item }} è installato."
-      loop: "{{ pkg_check_rpm.results }}"
+      
+    - name: "Print installed packages (Debian)"
+      debug:
+        msg: "Package {{ item.item }} is installed."
+      loop: "{{ package_check_deb.results }}"
       when:
-        - pkg_check_rpm is defined
-        - pkg_check_rpm.results is defined
+        - package_check_deb is defined
+        - package_check_deb.results is defined
         - item is mapping
-        - "'rc' in item"
+        - 'rc' in item
         - item.rc == 0
+        - ansible_facts['os_family'] == "Debian"
 
-    - name: Controlla se i pacchetti sono installati (SUSE)
-      ansible.builtin.shell: "zypper --non-interactive info {{ item }} | grep 'Installed: Yes'"
-      register: pkg_check_suse
-      ignore_errors: yes
-      loop: "{{ packages_to_check }}"
-      when: ansible_facts['os_family'] == "Suse"
-
-    - name: Stampa risultato controllo pacchetti SUSE
-      ansible.builtin.debug:
-        msg: "Pacchetto {{ item.item }} è installato."
-      loop: "{{ pkg_check_suse.results }}"
+    - name: "Print installed packages (RedHat)"
+      debug:
+        msg: "Package {{ item.item }} is installed."
+      loop: "{{ package_check_rpm.results }}"
       when:
-        - pkg_check_suse is defined
-        - pkg_check_suse.results is defined
+        - package_check_rpm is defined
+        - package_check_rpm.results is defined
         - item is mapping
-        - "'rc' in item"
+        - 'rc' in item
         - item.rc == 0
+        - ansible_facts['os_family'] == "RedHat"
