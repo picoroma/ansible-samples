@@ -1,5 +1,5 @@
 ---
-- hosts: servers
+- hosts: all
   gather_facts: yes
   vars:
     package_names:
