@@ -22,7 +22,12 @@
       ansible.builtin.debug:
         msg: "Pacchetto {{ item.item }} è installato."
       loop: "{{ pkg_check_deb.results }}"
-      when: pkg_check_deb is defined and pkg_check_deb.results is defined and item.rc == 0
+      when:
+        - pkg_check_deb is defined
+        - pkg_check_deb.results is defined
+        - item is mapping
+        - 'rc' in item
+        - item.rc == 0
 
     - name: Controlla se i pacchetti sono installati (RedHat/CentOS)
       ansible.builtin.shell: "rpm -q {{ item }}"
@@ -35,7 +40,12 @@
       ansible.builtin.debug:
         msg: "Pacchetto {{ item.item }} è installato."
       loop: "{{ pkg_check_rpm.results }}"
-      when: pkg_check_rpm is defined and pkg_check_rpm.results is defined and item.rc == 0
+      when:
+        - pkg_check_rpm is defined
+        - pkg_check_rpm.results is defined
+        - item is mapping
+        - 'rc' in item
+        - item.rc == 0
 
     - name: Controlla se i pacchetti sono installati (SUSE)
       ansible.builtin.shell: "zypper --non-interactive info {{ item }} | grep 'Installed: Yes'"
@@ -48,4 +58,9 @@
       ansible.builtin.debug:
         msg: "Pacchetto {{ item.item }} è installato."
       loop: "{{ pkg_check_suse.results }}"
-      when: pkg_check_suse is defined and pkg_check_suse.results is defined and item.rc == 0
+      when:
+        - pkg_check_suse is defined
+        - pkg_check_suse.results is defined
+        - item is mapping
+        - 'rc' in item
+        - item.rc == 0
